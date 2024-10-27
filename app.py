@@ -8,10 +8,6 @@ from knowledge_graph_setup import KnowledgeGraph
 st.set_page_config(layout="wide")
 st.title("Chatbot with Adaptive Policy Ontology")
 
-if "ontology" not in st.session_state:
-    st.session_state.ontology = KnowledgeGraph()
-    st.session_state.ontology.setup_graph()
-
 policy = st.selectbox(
     'What policy would you like the chatbot to adhere to?',
     (
@@ -59,6 +55,10 @@ def respond_to_prompt(prompt):
         real_or_fake=json.loads(observer_response)["real_or_fake"],
         reasoning_path=json.loads(observer_response)["reasoning_path"]
     )    
+
+if "ontology" not in st.session_state:
+    st.session_state.ontology = KnowledgeGraph()
+    st.session_state.ontology.setup_graph()
 
 with col1:
 
