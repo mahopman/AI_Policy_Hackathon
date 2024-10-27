@@ -144,4 +144,4 @@ st.text(st.session_state.observer_responses)
 with col2:
     st.session_state.ontology.visualize_graph()
     html_str = open("knowledge_graph_visualization.html", "r").read()
-    st.markdown(html_str, unsafe_allow_html=True)
+    st.components.v1.html(html_str, scrolling=True, height=500)
