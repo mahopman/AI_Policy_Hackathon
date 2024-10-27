@@ -9,6 +9,7 @@ class RiskTree:
             root_node = Node(root_key)
             self.create_tree(data[root_key], root_node)
             self.root_nodes.append(root_node)
+        self.data = data
 
     @staticmethod
     def convertRiskAssessmentsToTree(riskAssessments):
@@ -48,6 +49,18 @@ class RiskTree:
         for root in self.root_nodes:
             DotExporter(root).to_picture(f"{root.name}.png")
 
+    def calculate_risk_level(self, risk_assessment):
+        risk_level = 0
+        categories_assessed = 0
+        for category, value in risk_assessment.items():
+            if category in self.data:
+                if value in self.data[category]:
+                    risk_level += self.average(self.data[category][value])
+                    categories_assessed += 1
+        risk_level = risk_level / categories_assessed if categories_assessed else 0
+        return round(risk_level, 2)
+
+
 # # Create several RiskAssessment objects with various categories and risk levels
 # risk_assessments = [
 #     RiskAssessment(risk_level="low", category1="object", category2="physical", category3="fictional"),
@@ -68,3 +81,12 @@ class RiskTree:
 
 # # Export the tree to PNG files
 # risk_tree.export()
+
+# risk_assessment = {
+#     'category1': 'object',
+#     'category2': 'physical',
+#     'category3': 'fictional'
+# }
+
+# risk_level = risk_tree.calculate_risk_level(risk_assessment)
+# print(risk_level)
