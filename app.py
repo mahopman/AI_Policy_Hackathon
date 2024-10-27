@@ -142,5 +142,6 @@ st.text(st.session_state.observer_responses)
 #            st.image("reality.png")
 
 with col2:
-    html_str = st.session_state.ontology.visualize_graph()
+    st.session_state.ontology.visualize_graph()
+    html_str = open("knowledge_graph_visualization.html", "r").read()
     st.markdown(html_str, unsafe_allow_html=True)

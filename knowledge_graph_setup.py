@@ -124,16 +124,14 @@ class KnowledgeGraph:
             for record in result:
                 net.add_edge(record["source"], record["target"], title=record["type"])
 
-        return net
-
         output_file = "knowledge_graph_visualization.html"
         net.write_html(output_file)
         print(f"Graph visualization saved as {output_file}")
 
-        if os.path.isfile(output_file):
-            webbrowser.open("file://" + os.path.abspath(output_file))
-        else:
-            print("Failed to open the visualization HTML file.")
+        #if os.path.isfile(output_file):
+        #    webbrowser.open("file://" + os.path.abspath(output_file))
+        #else:
+        #    print("Failed to open the visualization HTML file.")
 
 if __name__ == "__main__":
     kg = KnowledgeGraph()
