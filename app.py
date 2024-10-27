@@ -3,6 +3,7 @@ import streamlit as st
 from risk_assessment import RiskAssessment
 from risk_tree import RiskTree
 import json
+import os
 
 POLICY = "Do not endorse or encourage any violent behaivor."
 st.set_page_config(layout="wide")
@@ -102,11 +103,17 @@ def parse_risk_assessments(data):
 
 st.text(st.session_state.observer_responses)
 print(parse_risk_assessments(st.session_state.observer_responses))
+
 with col2:
     risk_tree = RiskTree.convertRiskAssessmentsToTree(parse_risk_assessments(st.session_state.observer_responses))
     risk_tree = RiskTree(risk_tree)
     risk_tree.render()
     risk_tree.export()
-    st.image("victim.png")
-    st.image("violence_type.png")
-    st.image("reality.png")
+    
+    if risk_tree.root_nodes:
+        if os.path.exists("victim.png"):
+            st.image("victim.png")
+        if os.path.exists("violence_type.png"):
+            st.image("violence_type.png")
+        if os.path.exists("reality.png"):
+            st.image("reality.png")
