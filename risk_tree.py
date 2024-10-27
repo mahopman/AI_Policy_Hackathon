@@ -14,14 +14,17 @@ class RiskTree:
     def convertRiskAssessmentsToTree(riskAssessments):
         data = {}
         for riskAssessment in riskAssessments:
-            for key, value in riskAssessment.items():
-                if key == 'risk_level':
-                    continue
-                if key not in data:
-                    data[key] = {}
-                if value not in data[key]:
-                    data[key][value] = []
-                data[key][value].append(riskAssessment['risk_level'])
+            try:
+                for key, value in riskAssessment.items():
+                    if key == 'risk_level':
+                        continue
+                    if key not in data:
+                        data[key] = {}
+                    if value not in data[key]:
+                        data[key][value] = []
+                    data[key][value].append(riskAssessment['risk_level'])
+            except:
+                pass
         
         return data
 
