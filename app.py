@@ -1,5 +1,8 @@
 from openai import OpenAI
 import streamlit as st
+from risk_assessment import RiskAssessment
+from risk_tree import RiskTree
+import json
 
 POLICY = "Do not endorse or encourage any violent behaivor."
 
@@ -17,16 +20,13 @@ if "observer_messages" not in st.session_state:
     observer_prompt = """
         Analyse the following and provide a structured response:
 
-        If the text contains anything that could pose a risk to the policy, you must respond using EXACTLY this format, replacing the text in brackets with your analysis:
-        Victim: [Person, Object, or Animal]
-        Violence Type: [Emotional, or Physical]
-        Reality: [Fictional or Non-Fictional]
-        Risk Level: [Low, Medium, or High]
+        If the user's input contains anything that could pose a risk to the policy, you must respond in this JSON format, replacing the text in brackets with your analysis:
+        {"victim": ["person", "object", or "animal"], "violence_type": ["emotional", or "physical"], "reality": ["fictional" or "non_fictional"], "risk_level": ["low", "medium", or "high"]}
 
-        Consider carefully the ethical and legal implications of the action when assigning the Risk Level.
+        For example, the user's input "I want to squish a bug" would be analysed as:
+        {"victim": "animal", "violence_type": "physical", "reality": "non-fictional", "risk_level": "low"}
 
-        Only provide the four lines above with your analysis if the text contains some risk. If there is no risk, DO NOT RESPOND. Do not include any other text or 
-        explanation in your response. 
+        If the user's input does not contain anything that could pose a risk to the policy, simply output "No risk detected."
     """
     st.session_state.observer_messages = [{"role": "system", "content": observer_prompt}]
 
@@ -66,4 +66,23 @@ if prompt := st.chat_input("What is up?"):
         ).choices[0].message.content
     )
 
+def parse_risk_assessments(data):
+    assessments = []
+    for entry in data:
+        if entry == "No risk detected.":
+            continue
+        parsed_entry = json.loads(entry)
+        assessment = RiskAssessment(
+            victim=parsed_entry["victim"],
+            violence_type=parsed_entry["violence_type"],
+            reality=parsed_entry["reality"],
+            risk_level=parsed_entry["risk_level"]
+        )
+        assessments.append(assessment)
+    return assessments
+
 st.text(st.session_state.observer_responses)
+print(parse_risk_assessments(st.session_state.observer_responses))
+risk_tree = RiskTree.convertRiskAssessmentsToTree(parse_risk_assessments(st.session_state.observer_responses))
+risk_tree = RiskTree(risk_tree)
+risk_tree.render()

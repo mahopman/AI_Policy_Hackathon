@@ -12,17 +12,17 @@ class RiskTree:
 
     @staticmethod
     def convertRiskAssessmentsToTree(riskAssessments):
-        data = {"victim": {}, "type": {}, "reality": {}}
+        data = {"victim": {}, "violence_type": {}, "reality": {}}
         for riskAssessment in riskAssessments:
             if riskAssessment.victim not in data["victim"]:
                 data["victim"][riskAssessment.victim] = []
-            data["victim"][riskAssessment.victim].append(riskAssessment.risk)
-            if riskAssessment.type not in data["type"]:
-                data["type"][riskAssessment.type] = []
-            data["type"][riskAssessment.type].append(riskAssessment.risk)
+            data["victim"][riskAssessment.victim].append(riskAssessment.risk_level)
+            if riskAssessment.violence_type not in data["violence_type"]:
+                data["violence_type"][riskAssessment.violence_type] = []
+            data["violence_type"][riskAssessment.violence_type].append(riskAssessment.risk_level)
             if riskAssessment.reality not in data["reality"]:
                 data["reality"][riskAssessment.reality] = []
-            data["reality"][riskAssessment.reality].append(riskAssessment.risk)
+            data["reality"][riskAssessment.reality].append(riskAssessment.risk_level)
         
         return data
 
