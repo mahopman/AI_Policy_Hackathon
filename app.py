@@ -1,7 +1,5 @@
 from openai import OpenAI
 import streamlit as st
-from risk_assessment import RiskAssessment
-from risk_tree import RiskTree
 import json
 import os
 from sample_prompts import sample_prompts_short, sample_prompts_long
@@ -9,6 +7,10 @@ from knowledge_graph_setup import KnowledgeGraph
 
 st.set_page_config(layout="wide")
 st.title("Chatbot with Adaptive Policy Ontology")
+
+if "ontology" not in st.session_state:
+    st.session_state.ontology = KnowledgeGraph()
+    st.session_state.ontology.setup_graph()
 
 policy = st.selectbox(
     'What policy would you like the chatbot to adhere to?',
@@ -57,10 +59,6 @@ def respond_to_prompt(prompt):
         real_or_fake=json.loads(observer_response)["real_or_fake"],
         reasoning_path=json.loads(observer_response)["reasoning_path"]
     )    
-    
-if "ontology" not in st.session_state:
-    st.session_state.ontology = KnowledgeGraph()
-    st.session_state.ontology.setup_graph()
 
 with col1:
 
@@ -76,10 +74,13 @@ with col1:
 
             You must respond in this JSON format, replacing the text in brackets with your analysis:
             {{
-                "user_input": [first 10 characters of the user's input], 
-                "inference": [conclusion, policy matched, reasoning path], 
-                "policy_rules": [list of relevant policy rules], 
-                "risk_level": [final risk level (LOW, MEDIUM, or HIGH) and reason]
+                "user_input": [user input], 
+                "inference_conclusion": [conclusion of the user's intent], 
+                "policy_matched": [(No violence, No animal violence, No fantasy violence)], 
+                "risk_level": [(Low, Medium, High)]
+                "target_type": [type of target or victim e.g. animal, person]
+                "real_or_fake": [context of violence (real or fantasy)]
+                "reasoning_path": [how you arrived at the conclusion]
             }}
 
             Consider carefully the ethical and legal implications of the action when assigning the Risk Level.
@@ -103,40 +104,6 @@ with col1:
 #        for prompt in sample_prompts_short:
 #            respond_to_prompt(prompt)
 
-#def parse_risk_assessments(data):
-#    assessments = []
-#    for entry in data:
-#        if entry == "No risk detected.":
-#            continue
-#        try:
-#            parsed_entry = json.loads(entry)
-#            assessment = RiskAssessment(
-#                victim=parsed_entry["victim"],
-#                violence_type=parsed_entry["violence_type"],
-#                reality=parsed_entry["reality"],
-#                risk_level=parsed_entry["risk_level"]
-#            )
-#            assessments.append(assessment)
-#        except:
-#            pass
-#    return assessments
-
-st.text(st.session_state.observer_responses)
-#print(parse_risk_assessments(st.session_state.observer_responses))
-
-#with col2:
-#    risk_tree = RiskTree.convertRiskAssessmentsToTree(parse_risk_assessments(st.session_state.observer_responses))
-#    risk_tree = RiskTree(risk_tree)
-#    risk_tree.render()
-#    risk_tree.export()
-    
-#    if risk_tree.root_nodes:
-#        if os.path.exists("victim.png"):
-#            st.image("victim.png")
-#        if os.path.exists("violence_type.png"):
-#            st.image("violence_type.png")
-#        if os.path.exists("reality.png"):
-#            st.image("reality.png")
 
 with col2:
     st.session_state.ontology.visualize_graph()
