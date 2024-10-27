@@ -76,13 +76,10 @@ with col1:
 
             You must respond in this JSON format, replacing the text in brackets with your analysis:
             {{
-                "user_input": [user input], 
-                "inference_conclusion": [conclusion of the user's intent], 
-                "policy_matched": [(No violence, No animal violence, No fantasy violence)], 
-                "risk_level": [(Low, Medium, High)]
-                "target_type": [type of target or victim e.g. animal, person]
-                "real_or_fake": [context of violence (real or fantasy)]
-                "reasoning_path": [how you arrived at the conclusion]
+                "user_input": [first 10 characters of the user's input], 
+                "inference": [conclusion, policy matched, reasoning path], 
+                "policy_rules": [list of relevant policy rules], 
+                "risk_level": [final risk level (LOW, MEDIUM, or HIGH) and reason]
             }}
 
             Consider carefully the ethical and legal implications of the action when assigning the Risk Level.
