@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 st.title("ChatGPT-like clone")
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-col1, col2 = st.columns([3, 1])
+col1, col2 = st.columns([1, 1])
 
 def respond_to_prompt(prompt):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -116,3 +116,7 @@ st.text(st.session_state.observer_responses)
 #            st.image("violence_type.png")
 #        if os.path.exists("reality.png"):
 #            st.image("reality.png")
+
+with col2:
+    html_str = "<h3>this is an html string</h3>"
+    st.markdown(html_str, unsafe_allow_html=True)
