@@ -54,13 +54,17 @@ with col1:
         observer_prompt = f"""
             Analyse the following and provide a structured response:
 
-            If the user's input contains anything that could pose a risk to the policy, you must respond in this JSON format, replacing the text in brackets with your analysis:
-            {{"victim": ["VICTIM_VALUE"], "violence_type": ["VIOLENCE_TYPE_VALUE"], "reality": ["REALITY_VALUE"], "risk_level": ["low", "medium", or "high"]}}
+            You must respond in this JSON format, replacing the text in brackets with your analysis:
+            {{
+                "user_input": [first 10 characters of the user's input], 
+                "inference": [conclusion, policy matched, reasoning path], 
+                "policy_rules": [list of relevant policy rules], 
+                "risk_level": [final risk level (LOW, MEDIUM, or HIGH) and reason]
+            }}
 
-            For example, the user's input "I want to squish a bug" would be analysed as:
-            {{"victim": "animal", "violence_type": "physical", "reality": "non-fictional", "risk_level": "low"}}
+            Consider carefully the ethical and legal implications of the action when assigning the Risk Level.
 
-            If the user's input does not contain anything that could pose a risk to the policy, simply output "No risk detected."
+            Do not include any other text or explanation in your response. Only provide the json format above with your analysis."
         """
         st.session_state.observer_messages = [{"role": "system", "content": observer_prompt}]
 
@@ -78,37 +82,37 @@ with col1:
         for prompt in sample_prompts_short:
             respond_to_prompt(prompt)
 
-def parse_risk_assessments(data):
-    assessments = []
-    for entry in data:
-        if entry == "No risk detected.":
-            continue
-        try:
-            parsed_entry = json.loads(entry)
-            assessment = RiskAssessment(
-                victim=parsed_entry["victim"],
-                violence_type=parsed_entry["violence_type"],
-                reality=parsed_entry["reality"],
-                risk_level=parsed_entry["risk_level"]
-            )
-            assessments.append(assessment)
-        except:
-            pass
-    return assessments
+#def parse_risk_assessments(data):
+#    assessments = []
+#    for entry in data:
+#        if entry == "No risk detected.":
+#            continue
+#        try:
+#            parsed_entry = json.loads(entry)
+#            assessment = RiskAssessment(
+#                victim=parsed_entry["victim"],
+#                violence_type=parsed_entry["violence_type"],
+#                reality=parsed_entry["reality"],
+#                risk_level=parsed_entry["risk_level"]
+#            )
+#            assessments.append(assessment)
+#        except:
+#            pass
+#    return assessments
 
 st.text(st.session_state.observer_responses)
-print(parse_risk_assessments(st.session_state.observer_responses))
+#print(parse_risk_assessments(st.session_state.observer_responses))
 
-with col2:
-    risk_tree = RiskTree.convertRiskAssessmentsToTree(parse_risk_assessments(st.session_state.observer_responses))
-    risk_tree = RiskTree(risk_tree)
-    risk_tree.render()
-    risk_tree.export()
+#with col2:
+#    risk_tree = RiskTree.convertRiskAssessmentsToTree(parse_risk_assessments(st.session_state.observer_responses))
+#    risk_tree = RiskTree(risk_tree)
+#    risk_tree.render()
+#    risk_tree.export()
     
-    if risk_tree.root_nodes:
-        if os.path.exists("victim.png"):
-            st.image("victim.png")
-        if os.path.exists("violence_type.png"):
-            st.image("violence_type.png")
-        if os.path.exists("reality.png"):
-            st.image("reality.png")
+#    if risk_tree.root_nodes:
+#        if os.path.exists("victim.png"):
+#            st.image("victim.png")
+#        if os.path.exists("violence_type.png"):
+#            st.image("violence_type.png")
+#        if os.path.exists("reality.png"):
+#            st.image("reality.png")
