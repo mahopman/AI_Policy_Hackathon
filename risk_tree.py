@@ -35,8 +35,8 @@ class RiskTree:
                 node = Node(key, parent=parent)
                 self.create_tree(value, node)
             else:
-                avg_value = self.average(value)
-                Node(f"{key} (avg: {avg_value})", parent=parent)
+                avg_value = round(self.average(value), 2)
+                Node(f"{key} \nrisk: {avg_value}", parent=parent)
 
     def render(self):
         for root in self.root_nodes:
