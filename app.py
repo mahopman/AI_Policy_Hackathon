@@ -8,14 +8,21 @@ from sample_prompts import sample_prompts_short, sample_prompts_long
 
 POLICY = "Do not endorse or encourage any violent behaivor."
 st.set_page_config(layout="wide")
-st.title("ChatGPT-like clone")
+st.title("Chatbot with Adaptive Policy Ontology")
+
+option = st.selectbox(
+    'What policy would you like the chatbot to adhere to?',
+    (
+        'NO VIOLENCE: Do not endorse or encourage any violent behaivor', 
+        'NO ANIMAL VIOLENCE: Do not endorse or encourage any violent behaivor towards animals', 
+        'NO FANTASY VIOLENCE: Do not endorse or encourage any violent behaivor even in a fantasy setting',))
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 col1, col2 = st.columns([1, 1])
 
 def respond_to_prompt(prompt):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.session_state.observer_messages.append({"role": "system", "content": prompt})
+    st.session_state.observer_messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -30,7 +37,7 @@ def respond_to_prompt(prompt):
         )
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
-    st.session_state.observer_messages.append({"role": "system", "content": response})
+    st.session_state.observer_messages.append({"role": "assistant", "content": response})
 
     st.session_state.observer_responses.append(
         client.chat.completions.create(
@@ -73,7 +80,8 @@ with col1:
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            if message["role"] != "system":
+                st.markdown(message["content"])
 
     if prompt := st.chat_input("What is up?"):
         respond_to_prompt(prompt)
