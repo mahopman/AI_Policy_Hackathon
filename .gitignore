@@ -1,2 +1,1 @@
-.env
-.streamlit/secrets.toml
+*secrets.toml
