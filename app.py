@@ -53,7 +53,7 @@ with col1:
             Analyse the following and provide a structured response:
 
             If the user's input contains anything that could pose a risk to the policy, you must respond in this JSON format, replacing the text in brackets with your analysis:
-            {{"victim": ["person", "object", or "animal"], "violence_type": ["emotional", or "physical"], "reality": ["fictional" or "non_fictional"], "risk_level": ["low", "medium", or "high"]}}
+            {{"victim": ["VICTIM_VALUE"], "violence_type": ["VIOLENCE_TYPE_VALUE"], "reality": ["REALITY_VALUE"], "risk_level": ["low", "medium", or "high"]}}
 
             For example, the user's input "I want to squish a bug" would be analysed as:
             {{"victim": "animal", "violence_type": "physical", "reality": "non-fictional", "risk_level": "low"}}

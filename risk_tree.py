@@ -12,17 +12,16 @@ class RiskTree:
 
     @staticmethod
     def convertRiskAssessmentsToTree(riskAssessments):
-        data = {"victim": {}, "violence_type": {}, "reality": {}}
+        data = {}
         for riskAssessment in riskAssessments:
-            if riskAssessment.victim not in data["victim"]:
-                data["victim"][riskAssessment.victim] = []
-            data["victim"][riskAssessment.victim].append(riskAssessment.risk_level)
-            if riskAssessment.violence_type not in data["violence_type"]:
-                data["violence_type"][riskAssessment.violence_type] = []
-            data["violence_type"][riskAssessment.violence_type].append(riskAssessment.risk_level)
-            if riskAssessment.reality not in data["reality"]:
-                data["reality"][riskAssessment.reality] = []
-            data["reality"][riskAssessment.reality].append(riskAssessment.risk_level)
+            for key, value in riskAssessment.items():
+                if key == 'risk_level':
+                    continue
+                if key not in data:
+                    data[key] = {}
+                if value not in data[key]:
+                    data[key][value] = []
+                data[key][value].append(riskAssessment['risk_level'])
         
         return data
 
@@ -35,8 +34,7 @@ class RiskTree:
                 node = Node(key, parent=parent)
                 self.create_tree(value, node)
             else:
-                avg_value = round(self.average(value), 2)
-                Node(f"{key} \nrisk: {avg_value}", parent=parent)
+                Node(f"{key}: {self.average(value):.2f}", parent=parent)
 
     def render(self):
         for root in self.root_nodes:
@@ -47,8 +45,23 @@ class RiskTree:
         for root in self.root_nodes:
             DotExporter(root).to_picture(f"{root.name}.png")
 
-# Uncomment to test:
-# data = RiskTree.convertRiskAssessmentsToTree([RiskAssessment("object", "physical", "fictional", 0.5), RiskAssessment("person", "physical", "real", 0.3)])
-# print(data)
-# riskTree = RiskTree(data)
-# riskTree.render()
+# # Create several RiskAssessment objects with various categories and risk levels
+# risk_assessments = [
+#     RiskAssessment(risk_level="low", category1="object", category2="physical", category3="fictional"),
+#     RiskAssessment(risk_level="medium", category1="object", category2="physical", category3="real"),
+#     RiskAssessment(risk_level="high", category1="person", category2="physical", category3="real"),
+#     RiskAssessment(risk_level="low", category1="person", category2="digital", category3="fictional"),
+#     RiskAssessment(risk_level="medium", category1="object", category2="digital", category3="fictional"),
+# ]
+
+# # Convert the RiskAssessment objects to a tree structure
+# data = RiskTree.convertRiskAssessmentsToTree(risk_assessments)
+
+# # Initialize the RiskTree with the converted data
+# risk_tree = RiskTree(data)
+
+# # Render the tree to the console
+# risk_tree.render()
+
+# # Export the tree to PNG files
+# risk_tree.export()
