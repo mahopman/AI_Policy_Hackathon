@@ -5,12 +5,12 @@ from risk_tree import RiskTree
 import json
 import os
 from sample_prompts import sample_prompts_short, sample_prompts_long
+from knowledge_graph_setup import KnowledgeGraph
 
-POLICY = "Do not endorse or encourage any violent behaivor."
 st.set_page_config(layout="wide")
 st.title("Chatbot with Adaptive Policy Ontology")
 
-option = st.selectbox(
+policy = st.selectbox(
     'What policy would you like the chatbot to adhere to?',
     (
         'NO VIOLENCE: Do not endorse or encourage any violent behaivor', 
@@ -39,15 +39,28 @@ def respond_to_prompt(prompt):
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.session_state.observer_messages.append({"role": "assistant", "content": response})
 
-    st.session_state.observer_responses.append(
-        client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.observer_messages
-            ],
-        ).choices[0].message.content
-    )
+    observer_response = client.chat.completions.create(
+                model=st.session_state["openai_model"],
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.observer_messages
+                ],
+            ).choices[0].message.content
+
+    st.session_state.observer_responses.append(observer_response)
+    st.session_state.ontology.add_user_input(
+        text=prompt,
+        inference_conclusion=json.loads(observer_response)["inference_conclusion"],
+        policy_matched=json.loads(observer_response)["policy_matched"],
+        risk_level=json.loads(observer_response)["risk_level"],
+        target_type=json.loads(observer_response)["target_type"],
+        real_or_fake=json.loads(observer_response)["real_or_fake"],
+        reasoning_path=json.loads(observer_response)["reasoning_path"]
+    )    
+    
+if "ontology" not in st.session_state:
+    st.session_state.ontology = KnowledgeGraph()
+    st.session_state.ontology.setup_graph()
 
 with col1:
 
@@ -55,7 +68,7 @@ with col1:
         st.session_state["openai_model"] = "gpt-3.5-turbo"
 
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "system", "content": f"Respond to the best of your ability and adhere to the following policy: {POLICY}"}]
+        st.session_state.messages = [{"role": "system", "content": f"Respond to the best of your ability and adhere to the following policy: {policy}"}]
 
     if "observer_messages" not in st.session_state:
         observer_prompt = f"""
@@ -63,10 +76,13 @@ with col1:
 
             You must respond in this JSON format, replacing the text in brackets with your analysis:
             {{
-                "user_input": [first 10 characters of the user's input], 
-                "inference": [conclusion, policy matched, reasoning path], 
-                "policy_rules": [list of relevant policy rules], 
-                "risk_level": [final risk level (LOW, MEDIUM, or HIGH) and reason]
+                "user_input": [user input], 
+                "inference_conclusion": [conclusion of the user's intent], 
+                "policy_matched": [(No violence, No animal violence, No fantasy violence)], 
+                "risk_level": [(Low, Medium, High)]
+                "target_type": [type of target or victim e.g. animal, person]
+                "real_or_fake": [context of violence (real or fantasy)]
+                "reasoning_path": [how you arrived at the conclusion]
             }}
 
             Consider carefully the ethical and legal implications of the action when assigning the Risk Level.
@@ -86,9 +102,9 @@ with col1:
     if prompt := st.chat_input("What is up?"):
         respond_to_prompt(prompt)
 
-    if st.button("Send Sample Prompts"):
-        for prompt in sample_prompts_short:
-            respond_to_prompt(prompt)
+#    if st.button("Send Sample Prompts"):
+#        for prompt in sample_prompts_short:
+#            respond_to_prompt(prompt)
 
 #def parse_risk_assessments(data):
 #    assessments = []
@@ -126,5 +142,5 @@ st.text(st.session_state.observer_responses)
 #            st.image("reality.png")
 
 with col2:
-    html_str = "<h3>this is an html string</h3>"
+    html_str = st.session_state.ontology.visualize_graph()
     st.markdown(html_str, unsafe_allow_html=True)
