@@ -44,15 +44,17 @@ def respond_to_prompt(prompt):
                     for m in st.session_state.observer_messages
                 ],
             ).choices[0].message.content
+    
+    print("OBSERVER RESPONSE:", observer_response)
 
     st.session_state.observer_responses.append(observer_response)
     st.session_state.ontology.add_user_input(
         text=prompt,
         inference_conclusion=json.loads(observer_response)["inference_conclusion"],
-        policy_matched=json.loads(observer_response)["policy_matched"],
-        risk_level=json.loads(observer_response)["risk_level"],
-        target_type=json.loads(observer_response)["target_type"],
-        real_or_fake=json.loads(observer_response)["real_or_fake"],
+        policy_matched=json.loads(observer_response)["policy_matched"].lower(),
+        risk_level=json.loads(observer_response)["risk_level"].lower(),
+        target_type=json.loads(observer_response)["target_type"].lower(),
+        real_or_fake=json.loads(observer_response)["real_or_fake"].lower(),
         reasoning_path=json.loads(observer_response)["reasoning_path"]
     )    
 
@@ -76,7 +78,7 @@ with col1:
             {{
                 "user_input": [user input], 
                 "inference_conclusion": [conclusion of the user's intent], 
-                "policy_matched": [(No violence, No animal violence, No fantasy violence)], 
+                "policy_matched": [One of (No violence, No animal violence, No fantasy violence)], 
                 "risk_level": [(Low, Medium, High)]
                 "target_type": [type of target or victim e.g. animal, person]
                 "real_or_fake": [context of violence (real or fantasy)]

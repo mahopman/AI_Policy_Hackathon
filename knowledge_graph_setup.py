@@ -23,15 +23,15 @@ class KnowledgeGraph:
     def create_core_nodes(tx):
         tx.run("MATCH (n) DETACH DELETE n")
 
-        tx.run("CREATE (:Policy_Rule {name: 'No violence'})")
-        tx.run("CREATE (:Policy_Rule {name: 'No animal violence'})")
-        tx.run("CREATE (:Policy_Rule {name: 'No fantasy violence'})")
+        tx.run("CREATE (:Policy_Rule {name: 'no violence'})")
+        tx.run("CREATE (:Policy_Rule {name: 'no animal violence'})")
+        tx.run("CREATE (:Policy_Rule {name: 'no fantasy violence'})")
 
-        tx.run("CREATE (:Risk_Level {level: 'Low'})")
-        tx.run("CREATE (:Risk_Level {level: 'Medium'})")
-        tx.run("CREATE (:Risk_Level {level: 'High'})")
+        tx.run("CREATE (:Risk_Level {level: 'low'})")
+        tx.run("CREATE (:Risk_Level {level: 'medium'})")
+        tx.run("CREATE (:Risk_Level {level: 'high'})")
 
-        tx.run("CREATE (:Target_Type {type: 'pet'})")
+        tx.run("CREATE (:Target_Type {type: 'animal'})")
         tx.run("CREATE (:Target_Type {type: 'person'})")
 
         tx.run("CREATE (:RealOrFake {context: 'real'})")
@@ -111,6 +111,7 @@ class KnowledgeGraph:
         with self.driver.session() as session:
             result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.name AS name, n.text AS text, n.level AS level, n.context AS context, n.type AS type, n.conclusion AS conclusion")
             for record in result:
+                print(record)
                 node_id = record["id"]
                 labels = record["labels"]
                 label = labels[0] 
@@ -122,6 +123,7 @@ class KnowledgeGraph:
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
+                print(record)
                 net.add_edge(record["source"], record["target"], title=record["type"])
 
         output_file = "knowledge_graph_visualization.html"
