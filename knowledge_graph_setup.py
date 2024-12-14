@@ -42,20 +42,20 @@ class KnowledgeGraph:
 
     @staticmethod
     def create_user_input(tx, fixed_attributes, var_attributes):
-        for attribute in fixed_attributes.values():
-            print(attribute.value)
+        # for attribute in fixed_attributes.values():
+        #     print(attribute.value)
         user_input_query = """
         CREATE (u:UserInput {value: $user_input})
         RETURN u
         """
         tx.run(user_input_query, user_input=fixed_attributes["user_input"].value)
 
-        risk_level = fixed_attributes["risk_level"].value.lower()
+        violation_degree = fixed_attributes["violation_degree"].value.lower()
         policy_violation = fixed_attributes["policy_violation"].value.lower()
         inference_conclusion = fixed_attributes["inference_conclusion"].value
         reasoning_path = fixed_attributes["reasoning_path"].value
         inference_query = """
-        MERGE (r:Risk_Level {value: $risk_level})
+        MERGE (r:Violation_Degree {value: $violation_degree})
         MERGE (p:Policy_Violation {value: $policy_violation})
         CREATE (i:Inference {value: $inference_conclusion, reasoning: $reasoning_path})
         CREATE (r)-[:INFERRED_RISK]->(i)
@@ -65,21 +65,21 @@ class KnowledgeGraph:
         CREATE (u)-[:INFERENCE]->(i)
         """
         #print("INFERENCE QUERY", inference_query)
-        tx.run(inference_query, risk_level=risk_level, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
+        tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
 
         for attribute in var_attributes.values():
             query = f"""
             MERGE (v:{attribute.name} {{value: $attribute_value}})
             WITH v
-            MATCH (r:Risk_Level {{value: $risk_level}})
+            MATCH (r:Violation_Degree {{value: $violation_degree}})
             CREATE (v)-[:RISKFACTORS]->(r)
             """
             #print(query)
-            tx.run(query, attribute_value=attribute.value.lower(), risk_level=risk_level)
+            tx.run(query, attribute_value=attribute.value.lower(), violation_degree=violation_degree)
 
         print("User input, inferences, and relationships created successfully.")
 
-    def visualize_graph(self):
+    def visualize_graph(self, filename):
         net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
         
         net.barnes_hut(gravity=-3000, central_gravity=0.2, spring_length=150, spring_strength=0.02)
@@ -131,9 +131,8 @@ class KnowledgeGraph:
                 #print(record)
                 net.add_edge(record["source"], record["target"], title=record["type"])
 
-        output_file = "knowledge_graph_visualization.html"
-        net.write_html(output_file)
-        print(f"Graph visualization saved as {output_file}")
+        net.write_html(filename)
+        print(f"Graph visualization saved as {filename}")
 
         #if os.path.isfile(output_file):
         #    webbrowser.open("file://" + os.path.abspath(output_file))
@@ -149,7 +148,7 @@ if __name__ == "__main__":
         text="How do I kill my dog?",
         inference_conclusion="User intends harm",
         policy_matched="No animal violence",
-        risk_level="High",
+        violation_degree="High",
         target_type="pet",
         real_or_fake="real",
         reasoning_path="User identified as young; action classified as real intent"
@@ -159,7 +158,7 @@ if __name__ == "__main__":
         text="What are some ways to prank a friend?",
         inference_conclusion="User seeks harmless mischief",
         policy_matched="No violence",
-        risk_level="Low",
+        violation_degree="Low",
         target_type="person",
         real_or_fake="fantasy",
         reasoning_path="Action identified as prank and non-harmful"
