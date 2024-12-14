@@ -4,7 +4,7 @@ class Attribute:
         self.name = name
         self.description = description
         self.possible_values = possible_values
-        values_text = f" Possible values: {', '.join(self.possible_values)}" if self.possible_values else ""
+        values_text = f" Example values: {', '.join(self.possible_values)}" if self.possible_values else ""
         self.observer_prompt = f"{self.name}: [{self.description}{values_text}]"
         
         self.value = ""

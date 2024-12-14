@@ -23,15 +23,16 @@ class KnowledgeGraph:
     def create_core_nodes(tx):
         tx.run("MATCH (n) DETACH DELETE n")
 
-        tx.run("CREATE (:Policy_Rule {value: 'no violence'})")
-        tx.run("CREATE (:Policy_Rule {value: 'no animal violence'})")
-        tx.run("CREATE (:Policy_Rule {value: 'no fantasy violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no animal violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no fantasy violence'})")
 
-        tx.run("CREATE (:Risk_Level {value: 'low'})")
-        tx.run("CREATE (:Risk_Level {value: 'medium'})")
-        tx.run("CREATE (:Risk_Level {value: 'high'})")
+        # tx.run("CREATE (:Risk_Level {value: 'low'})")
+        # tx.run("CREATE (:Risk_Level {value: 'medium'})")
+        # tx.run("CREATE (:Risk_Level {value: 'high'})")
 
-        print("Core nodes created successfully.")
+        #print("Core nodes created successfully.")
+        pass
 
     def add_user_input(self, fixed_attributes, var_attributes):
         with self.driver.session() as session:
@@ -50,11 +51,12 @@ class KnowledgeGraph:
         tx.run(user_input_query, user_input=fixed_attributes["user_input"].value)
 
         risk_level = fixed_attributes["risk_level"].value.lower()
-        policy_matched = fixed_attributes["policy_matched"].value.lower()
+        policy_violation = fixed_attributes["policy_violation"].value.lower()
         inference_conclusion = fixed_attributes["inference_conclusion"].value
         reasoning_path = fixed_attributes["reasoning_path"].value
         inference_query = """
-        MATCH (r:Risk_Level {value: $risk_level}), (p:Policy_Rule {value: $policy_matched})
+        MERGE (r:Risk_Level {value: $risk_level})
+        MERGE (p:Policy_Violation {value: $policy_violation})
         CREATE (i:Inference {value: $inference_conclusion, reasoning: $reasoning_path})
         CREATE (r)-[:INFERRED_RISK]->(i)
         CREATE (p)-[:POLICY_MATCH]->(i)
@@ -62,8 +64,8 @@ class KnowledgeGraph:
         MATCH (u:UserInput {value: $user_input})
         CREATE (u)-[:INFERENCE]->(i)
         """
-        print("INFERENCE QUERY", inference_query)
-        tx.run(inference_query, risk_level=risk_level, policy_matched=policy_matched, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
+        #print("INFERENCE QUERY", inference_query)
+        tx.run(inference_query, risk_level=risk_level, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
 
         for attribute in var_attributes.values():
             query = f"""
@@ -72,7 +74,7 @@ class KnowledgeGraph:
             MATCH (r:Risk_Level {{value: $risk_level}})
             CREATE (v)-[:RISKFACTORS]->(r)
             """
-            print(query)
+            #print(query)
             tx.run(query, attribute_value=attribute.value.lower(), risk_level=risk_level)
 
         print("User input, inferences, and relationships created successfully.")
@@ -114,7 +116,7 @@ class KnowledgeGraph:
         with self.driver.session() as session:
             result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.name AS name, n.text AS text, n.level AS level, n.context AS context, n.type AS type, n.conclusion AS conclusion")
             for record in result:
-                print(record)
+                #print(record)
                 node_id = record["id"]
                 labels = record["labels"]
                 label = labels[0] 
@@ -126,7 +128,7 @@ class KnowledgeGraph:
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
-                print(record)
+                #print(record)
                 net.add_edge(record["source"], record["target"], title=record["type"])
 
         output_file = "knowledge_graph_visualization.html"

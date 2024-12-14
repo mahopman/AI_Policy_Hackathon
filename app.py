@@ -9,25 +9,25 @@ from attribute import Attribute
 st.set_page_config(layout="wide")
 st.title("Chatbot with Adaptive Policy Ontology")
 
+possible_polices = ['Write responses that are not harmful, making sure to avoid encouraging illegal, unethical or immoral activity.',
+                    "Write reponses that avoid toxicity, racism, sexism, and social bias.",
+                    "Write a response that a wise, ethical, polite, and friendly person would be likely to say."]
 policy = st.selectbox(
     'What policy would you like the chatbot to adhere to?',
-    (
-        'NO VIOLENCE: Do not endorse or encourage any violent behaivor', 
-        'NO ANIMAL VIOLENCE: Do not endorse or encourage any violent behaivor towards animals', 
-        'NO FANTASY VIOLENCE: Do not endorse or encourage any violent behaivor even in a fantasy setting',))
+    possible_polices)
 
 fixed_attributes = {
-    "user_input": Attribute("user_input", "The user's input", []),
-    "inference_conclusion": Attribute("inference_conclusion", "conclusion of the user's intent", []),
-    "policy_matched": Attribute("policy_matched", "", ["no violence", "no animal violence", "no fantasy violence"]),
-    "risk_level": Attribute("risk_level", "", ["low", "medium", "high"]),
-    "reasoning_path": Attribute("reasoning_path", "how you arrived at the conclusion", [])
+    "user_input": Attribute("user_input", "The latest user input", []),
+    "inference_conclusion": Attribute("inference_conclusion", "Conclusion of the user's intent", []),
+    "policy_violation": Attribute("policy_violation", "The way the assistant is at risk of violating the policy, if any.", ["Encourages violence", "Contains social bias"]),
+    "risk_level": Attribute("risk_level", "The risk level for the assistant violating the policy", ["none", "low", "medium", "high"]),
+    "reasoning_path": Attribute("reasoning_path", "How you arrived at the policy_violation and risk_level assessment", [])
 }
 
 var_attributes = {
-    "target_type": Attribute("target_type", "type of target or victim", ["person", "animal"]),
-    "real_or_fake": Attribute("real_or_fake", "context of violence", ["real", "fantasy"]),
-    "violence_type": Attribute("violence_type", "type of violence", ["physical", "emotional"]),
+    "target_type": Attribute("target_type", "type of target or victim, if any.", ["person", "animal"]),
+    "real_or_fake": Attribute("real_or_fake", "context of the policy violation, if any.", ["real", "fantasy"]),
+    "violence_type": Attribute("violence_type", "type of violence, if any.", ["physical", "emotional"]),
     "emotional_tone": Attribute("emotional_tone", "the emotional tone of the input", ["malicious", "innocent", "satirical"])
 }
 
@@ -52,6 +52,8 @@ def respond_to_prompt(prompt):
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.session_state.observer_messages.append({"role": "assistant", "content": response})
+
+    print("Observer messages:", st.session_state.observer_messages)
 
     observer_response = client.chat.completions.create(
                 model=st.session_state["openai_model"],
@@ -88,7 +90,7 @@ with col1:
 
     if "observer_messages" not in st.session_state:
         observer_prompt = f"""
-            Analyse the following and provide a structured response:
+            Analyse the following conversation and provide a structured response about how it adheres to the following policy: {policy}.
 
             You must respond in this JSON format, replacing the text in brackets with your analysis:
             {'\n'.join(attribute.observer_prompt for attribute in fixed_attributes.values())}
