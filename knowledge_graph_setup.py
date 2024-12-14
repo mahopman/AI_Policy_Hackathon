@@ -23,54 +23,59 @@ class KnowledgeGraph:
     def create_core_nodes(tx):
         tx.run("MATCH (n) DETACH DELETE n")
 
-        tx.run("CREATE (:Policy_Rule {name: 'no violence'})")
-        tx.run("CREATE (:Policy_Rule {name: 'no animal violence'})")
-        tx.run("CREATE (:Policy_Rule {name: 'no fantasy violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no animal violence'})")
+        # tx.run("CREATE (:Policy_Rule {value: 'no fantasy violence'})")
 
-        tx.run("CREATE (:Risk_Level {level: 'low'})")
-        tx.run("CREATE (:Risk_Level {level: 'medium'})")
-        tx.run("CREATE (:Risk_Level {level: 'high'})")
+        # tx.run("CREATE (:Risk_Level {value: 'low'})")
+        # tx.run("CREATE (:Risk_Level {value: 'medium'})")
+        # tx.run("CREATE (:Risk_Level {value: 'high'})")
 
-        tx.run("CREATE (:Target_Type {type: 'animal'})")
-        tx.run("CREATE (:Target_Type {type: 'person'})")
+        #print("Core nodes created successfully.")
+        pass
 
-        tx.run("CREATE (:RealOrFake {context: 'real'})")
-        tx.run("CREATE (:RealOrFake {context: 'fantasy'})")
-
-        print("Core nodes created successfully.")
-
-    def add_user_input(self, text, inference_conclusion, policy_matched, risk_level, target_type, real_or_fake, reasoning_path=""):
+    def add_user_input(self, fixed_attributes, var_attributes):
         with self.driver.session() as session:
             session.write_transaction(
-                self.create_user_input, 
-                text, inference_conclusion, policy_matched, 
-                risk_level, target_type, real_or_fake, reasoning_path
+                self.create_user_input, fixed_attributes, var_attributes
             )
 
     @staticmethod
-    def create_user_input(tx, text, inference_conclusion, policy_matched, risk_level, target_type, real_or_fake, reasoning_path):
+    def create_user_input(tx, fixed_attributes, var_attributes):
+        for attribute in fixed_attributes.values():
+            print(attribute.value)
         user_input_query = """
-        CREATE (u:UserInput {text: $text})
+        CREATE (u:UserInput {value: $user_input})
         RETURN u
         """
-        tx.run(user_input_query, text=text[:100])
+        tx.run(user_input_query, user_input=fixed_attributes["user_input"].value)
 
+        risk_level = fixed_attributes["risk_level"].value.lower()
+        policy_violation = fixed_attributes["policy_violation"].value.lower()
+        inference_conclusion = fixed_attributes["inference_conclusion"].value
+        reasoning_path = fixed_attributes["reasoning_path"].value
         inference_query = """
-        MATCH (r:Risk_Level {level: $risk_level}), (p:Policy_Rule {name: $policy_matched})
-        CREATE (i:Inference {conclusion: $inference_conclusion, reasoning_path: $reasoning_path})
+        MERGE (r:Risk_Level {value: $risk_level})
+        MERGE (p:Policy_Violation {value: $policy_violation})
+        CREATE (i:Inference {value: $inference_conclusion, reasoning: $reasoning_path})
         CREATE (r)-[:INFERRED_RISK]->(i)
         CREATE (p)-[:POLICY_MATCH]->(i)
         WITH i
-        MATCH (u:UserInput {text: $text})
+        MATCH (u:UserInput {value: $user_input})
         CREATE (u)-[:INFERENCE]->(i)
         """
-        tx.run(inference_query, risk_level=risk_level, policy_matched=policy_matched, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, text=text[:100])
+        #print("INFERENCE QUERY", inference_query)
+        tx.run(inference_query, risk_level=risk_level, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
 
-        tx.run("""
-        MATCH (t:Target_Type {type: $target_type}), (rf:RealOrFake {context: $real_or_fake}), (r:Risk_Level {level: $risk_level})
-        CREATE (t)-[:RISKFACTORS]->(r)
-        CREATE (rf)-[:RISKFACTORS]->(r)
-        """, target_type=target_type, real_or_fake=real_or_fake, risk_level=risk_level)
+        for attribute in var_attributes.values():
+            query = f"""
+            MERGE (v:{attribute.name} {{value: $attribute_value}})
+            WITH v
+            MATCH (r:Risk_Level {{value: $risk_level}})
+            CREATE (v)-[:RISKFACTORS]->(r)
+            """
+            #print(query)
+            tx.run(query, attribute_value=attribute.value.lower(), risk_level=risk_level)
 
         print("User input, inferences, and relationships created successfully.")
 
@@ -109,21 +114,21 @@ class KnowledgeGraph:
         """)
 
         with self.driver.session() as session:
-            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.name AS name, n.text AS text, n.level AS level, n.context AS context, n.type AS type, n.conclusion AS conclusion")
+            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.name AS name, n.text AS text, n.level AS level, n.context AS context, n.type AS type, n.conclusion AS conclusion")
             for record in result:
-                print(record)
+                #print(record)
                 node_id = record["id"]
                 labels = record["labels"]
                 label = labels[0] 
                 
-                name = record["name"] or record["text"] or record["level"] or record["context"] or record["type"] or record["conclusion"] or label
+                name = record["value"] or record["text"] or record["level"] or record["context"] or record["type"] or record["conclusion"] or label
                 title = f"{label}: {name}"
                 
                 net.add_node(node_id, label=title, title=title, group=label)
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
-                print(record)
+                #print(record)
                 net.add_edge(record["source"], record["target"], title=record["type"])
 
         output_file = "knowledge_graph_visualization.html"
