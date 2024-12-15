@@ -5,6 +5,7 @@ import json
 from constants import fixed_attributes, var_attributes, developer_mode_prompt, parallel_universe_prompt
 from chatbot import Chatbot
 import os
+from conversation import Conversation
 
 prompt_ids = [2, 13, 18, 27, 23, 39, 48, 58, 59, 56, 54, 55, 51]
 #prompt_ids = [1]
@@ -23,6 +24,8 @@ with open("policies.json", "r") as f:
 NUM_PROMPTS = 1
 NUM_POLICIES = 1
 CONVERSATION_LENGTH = 5
+USE_PREGENERATED_CONVERSATION = False
+pregenerated_conversation = Conversation("conversation.txt")
 
 def main():
 
@@ -37,10 +40,11 @@ def main():
             kg = KnowledgeGraph()
             kg.setup_graph()
             for conversation_index in range(CONVERSATION_LENGTH):
-                if conversation_index > 0:
+                if conversation_index > 0 and not USE_PREGENERATED_CONVERSATION:
                     print()
                     print(observer_input)
                     prompt = input("Enter the next user input for the above conversation: ")
+
                 chatbot_response = chatbot.get_response(prompt)
                 print()
                 print("CHATBOT RESPONSE:", chatbot_response)
@@ -60,7 +64,9 @@ def main():
                 )
 
                 kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html")
-
+            conversation = Conversation()
+            conversation.load_from_string(observer_input)
+            conversation.save_to_file("conversation.txt")
             kg.close()
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+null_values = [None, "n/a", "none"]
+
 class Attribute:
 
     def __init__(self, name, description, possible_values):
@@ -14,6 +16,9 @@ class Attribute:
 
     def set_value(self, value):
         if value is None:
+            value = ""
+        value = value.lower()
+        if value in null_values:
             value = ""
         self.value = value
     

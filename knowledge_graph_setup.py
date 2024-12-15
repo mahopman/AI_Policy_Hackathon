@@ -68,6 +68,8 @@ class KnowledgeGraph:
         tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value[:100])
 
         for attribute in var_attributes.values():
+            if attribute.value == "":
+                continue
             query = f"""
             MERGE (v:{attribute.name} {{value: $attribute_value}})
             WITH v
