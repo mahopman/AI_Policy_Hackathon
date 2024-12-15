@@ -48,7 +48,7 @@ class KnowledgeGraph:
         CREATE (u:UserInput {value: $user_input})
         RETURN u
         """
-        tx.run(user_input_query, user_input=fixed_attributes["user_input"].value)
+        tx.run(user_input_query, user_input=fixed_attributes["user_input"].value[:100])
 
         violation_degree = fixed_attributes["violation_degree"].value.lower()
         policy_violation = fixed_attributes["policy_violation"].value.lower()
@@ -65,7 +65,7 @@ class KnowledgeGraph:
         CREATE (u)-[:INFERENCE]->(i)
         """
         #print("INFERENCE QUERY", inference_query)
-        tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value)
+        tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value[:100])
 
         for attribute in var_attributes.values():
             query = f"""
@@ -77,7 +77,7 @@ class KnowledgeGraph:
             #print(query)
             tx.run(query, attribute_value=attribute.value.lower(), violation_degree=violation_degree)
 
-        print("User input, inferences, and relationships created successfully.")
+        #print("User input, inferences, and relationships created successfully.")
 
     def visualize_graph(self, filename):
         net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")

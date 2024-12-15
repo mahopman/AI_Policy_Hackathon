@@ -13,5 +13,7 @@ class Attribute:
         return self.observer_prompt + " " + self.value
 
     def set_value(self, value):
+        if value is None:
+            value = ""
         self.value = value
     
