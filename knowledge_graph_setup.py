@@ -81,8 +81,8 @@ class KnowledgeGraph:
 
         #print("User input, inferences, and relationships created successfully.")
 
-    def visualize_graph(self, filename):
-        net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
+    def visualize_graph(self, filename, heading):
+        net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", heading=heading)
         
         net.barnes_hut(gravity=-3000, central_gravity=0.2, spring_length=150, spring_strength=0.02)
         net.set_options("""

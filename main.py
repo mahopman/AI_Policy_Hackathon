@@ -75,8 +75,10 @@ def main():
                     fixed_attributes, var_attributes
                 )
 
-                kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html")
-            new_conversation.save_to_file(f"conversations/conversation_policy_{policy['id']}_{str(datetime.datetime.now())}")
+                kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html", policy)
+            
+            if not USE_PREGENERATED_USER_INPUT or not USE_PREGENERATED_ASSISTANT_OUTPUT:
+                new_conversation.save_to_file(f"conversations/conversation_policy_{policy['id']}_{str(datetime.datetime.now())}")
             kg.close()
 
 if __name__ == "__main__":
