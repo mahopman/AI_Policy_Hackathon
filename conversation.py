@@ -32,18 +32,21 @@ class Conversation:
 
     def load_from_file(self, filename):
         with open(filename, "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                if line.startswith("USER"):
-                    self.user_inputs.append(line[6:])
-                elif line.startswith("ASSISTANT"):
-                    self.assistant_responses.append(line[11:])
+            self.load_from_string(file.read())
 
     def load_from_string(self, string):
-        self.user_inputs = []
-        self.assistant_responses = []
-        for line in string.split("\n"):
-            if line.startswith("USER"):
-                self.user_inputs.append(line[6:])
-            elif line.startswith("ASSISTANT"):
-                self.assistant_responses.append(line[11:])
+        lines = string.split('\n')
+        current_speaker = None
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("USER:"):
+                current_speaker = "USER"
+                self.user_inputs.append(line[5:].strip())
+            elif line.startswith("ASSISTANT:"):
+                current_speaker = "ASSISTANT"
+                self.assistant_responses.append(line[10:].strip())
+            elif current_speaker == "USER":
+                self.user_inputs[-1] += f" {line.strip()}"
+            elif current_speaker == "ASSISTANT":
+                self.assistant_responses[-1] += f" {line.strip()}"

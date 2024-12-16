@@ -6,6 +6,7 @@ from constants import fixed_attributes, var_attributes, developer_mode_prompt, p
 from chatbot import Chatbot
 import os
 from conversation import Conversation
+import datetime
 
 prompt_ids = [2, 13, 18, 27, 23, 39, 48, 58, 59, 56, 54, 55, 51]
 #prompt_ids = [1]
@@ -24,8 +25,10 @@ with open("policies.json", "r") as f:
 NUM_PROMPTS = 1
 NUM_POLICIES = 1
 CONVERSATION_LENGTH = 5
-USE_PREGENERATED_CONVERSATION = False
-pregenerated_conversation = Conversation("conversation.txt")
+USE_PREGENERATED_USER_INPUT = True
+USE_PREGENERATED_ASSISTANT_OUTPUT = False
+CONVERSATION_TO_LOAD = "conversation.txt"
+pregenerated_conversation = Conversation(CONVERSATION_TO_LOAD)
 
 def main():
 
@@ -35,20 +38,29 @@ def main():
         for prompt_id, prompt in enumerate(prompts[:NUM_POLICIES]):
             print("Starting the conversation with the following prompt:")
             print(prompt)
+            new_conversation = Conversation()
             chatbot = Chatbot(policy)
             observer_input = ""
             kg = KnowledgeGraph()
             kg.setup_graph()
             for conversation_index in range(CONVERSATION_LENGTH):
-                if conversation_index > 0 and not USE_PREGENERATED_CONVERSATION:
-                    print()
-                    print(observer_input)
-                    prompt = input("Enter the next user input for the above conversation: ")
-
-                chatbot_response = chatbot.get_response(prompt)
+                if not USE_PREGENERATED_USER_INPUT:
+                    if conversation_index > 0:
+                        print()
+                        print(observer_input)
+                        prompt = input("Enter the next user input for the above conversation: ")
+                else:
+                    prompt = pregenerated_conversation.get_user_input(conversation_index)
+                if not USE_PREGENERATED_ASSISTANT_OUTPUT:
+                    chatbot_response = chatbot.get_response(prompt)
+                    
+                else:
+                    chatbot_response = pregenerated_conversation.get_assistant_response(conversation_index)
                 print()
                 print("CHATBOT RESPONSE:", chatbot_response)
-                observer_input = chatbot.conversation_to_input()
+                new_conversation.add_user_input(prompt)
+                new_conversation.add_assistant_response(chatbot_response)
+                observer_input = new_conversation.get_conversation_at_step(conversation_index)
 
                 observer = Observer(policy["policy"])
                 fixed_attributes, var_attributes = observer.extract_attributes(observer_input)
@@ -64,9 +76,7 @@ def main():
                 )
 
                 kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html")
-            conversation = Conversation()
-            conversation.load_from_string(observer_input)
-            conversation.save_to_file("conversation.txt")
+            new_conversation.save_to_file(f"conversations/conversation_policy_{policy['id']}_{str(datetime.datetime.now())}")
             kg.close()
 
 if __name__ == "__main__":
