@@ -21,14 +21,14 @@ class Conversation:
     
     def get_conversation_at_step(self, step):
         full_conversation = ""
-        for i in range(step):
+        for i in range(step+1):
             full_conversation += "USER: " + self.get_user_input(i) + "\n"
             full_conversation += "ASSISTANT: " + self.get_assistant_response(i) + "\n"
         return full_conversation 
     
     def save_to_file(self, filename):
         with open(filename, "w") as file:
-            file.write(self.get_conversation_at_step(len(self.assistant_responses)))
+            file.write(self.get_conversation_at_step(len(self.assistant_responses)-1))
 
     def load_from_file(self, filename):
         with open(filename, "r") as file:

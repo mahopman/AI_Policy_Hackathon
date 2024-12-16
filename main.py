@@ -26,8 +26,8 @@ NUM_PROMPTS = 1
 NUM_POLICIES = 1
 CONVERSATION_LENGTH = 5
 USE_PREGENERATED_USER_INPUT = True
-USE_PREGENERATED_ASSISTANT_OUTPUT = False
-CONVERSATION_TO_LOAD = "conversation.txt"
+USE_PREGENERATED_ASSISTANT_OUTPUT = True
+CONVERSATION_TO_LOAD = "conversations/conversation_2024-12-16 03:37:24.013245"
 pregenerated_conversation = Conversation(CONVERSATION_TO_LOAD)
 
 def main():
@@ -36,8 +36,6 @@ def main():
         print("Starting run with the following policy")
         print(policy)
         for prompt_id, prompt in enumerate(prompts[:NUM_POLICIES]):
-            print("Starting the conversation with the following prompt:")
-            print(prompt)
             new_conversation = Conversation()
             chatbot = Chatbot(policy)
             observer_input = ""
@@ -45,6 +43,9 @@ def main():
             kg.setup_graph()
             for conversation_index in range(CONVERSATION_LENGTH):
                 if not USE_PREGENERATED_USER_INPUT:
+                    if conversation_index == 0:
+                        print("Starting the conversation with the following prompt:")
+                        print(prompt)
                     if conversation_index > 0:
                         print()
                         print(observer_input)
@@ -56,15 +57,14 @@ def main():
                     
                 else:
                     chatbot_response = pregenerated_conversation.get_assistant_response(conversation_index)
-                print()
-                print("CHATBOT RESPONSE:", chatbot_response)
+                
                 new_conversation.add_user_input(prompt)
                 new_conversation.add_assistant_response(chatbot_response)
                 observer_input = new_conversation.get_conversation_at_step(conversation_index)
 
-                observer = Observer(policy["policy"])
+                observer = Observer(policy["policy"], "gpt-4o-mini")
                 fixed_attributes, var_attributes = observer.extract_attributes(observer_input)
-                print("OBSERVER RESPONSE")
+                print(f"OBSERVER RESPONSE {conversation_index}")
                 for attribute in fixed_attributes.values():
                     print(f"{attribute.name}: {attribute.value}")
                 for attribute in var_attributes.values():
