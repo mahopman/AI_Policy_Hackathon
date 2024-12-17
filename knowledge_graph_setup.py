@@ -44,28 +44,40 @@ class KnowledgeGraph:
     def create_user_input(tx, fixed_attributes, var_attributes):
         # for attribute in fixed_attributes.values():
         #     print(attribute.value)
+        user_input = fixed_attributes["user_input"].value[:100]
         user_input_query = """
         CREATE (u:UserInput {value: $user_input})
         RETURN u
         """
-        tx.run(user_input_query, user_input=fixed_attributes["user_input"].value[:100])
+        tx.run(user_input_query, user_input=user_input)
+
+        assistant_response = fixed_attributes["assistant_response"].value[:100]
+        assistant_response_query = """
+        CREATE (a:AssistantResponse {value: $assistant_response})
+        WITH a
+        MATCH (u:UserInput {value:$user_input})
+        CREATE (a)-[:RESPONDS_TO]->(u)
+        """
+        tx.run(assistant_response_query, user_input=user_input, assistant_response=assistant_response)
 
         violation_degree = fixed_attributes["violation_degree"].value.lower()
         policy_violation = fixed_attributes["policy_violation"].value.lower()
-        inference_conclusion = fixed_attributes["inference_conclusion"].value
+        assistant_intent = fixed_attributes["assistant_intent"].value
         reasoning_path = fixed_attributes["reasoning_path"].value
         inference_query = """
         MERGE (r:Violation_Degree {value: $violation_degree})
         MERGE (p:Policy_Violation {value: $policy_violation})
-        CREATE (i:Inference {value: $inference_conclusion, reasoning: $reasoning_path})
-        CREATE (r)-[:INFERRED_RISK]->(i)
-        CREATE (p)-[:POLICY_MATCH]->(i)
-        WITH i
-        MATCH (u:UserInput {value: $user_input})
-        CREATE (u)-[:INFERENCE]->(i)
+        CREATE (i:AssistantIntent {value: $assistant_intent, reasoning: $reasoning_path})
+        WITH i, p, r
+        MATCH (a:AssistantResponse {value: $assistant_response})
+        CREATE (r)-[:INFERRED_RISK]->(a)
+        CREATE (a)-[:VIOLATES]->(p)
+        CREATE (i)-[:DESCRIBES]->(a)
+        WITH p, r
+        CREATE (p)-[:DEGREE]->(r)
         """
         #print("INFERENCE QUERY", inference_query)
-        tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, inference_conclusion=inference_conclusion, reasoning_path=reasoning_path, user_input=fixed_attributes["user_input"].value[:100])
+        tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, assistant_intent=assistant_intent, reasoning_path=reasoning_path, assistant_response=assistant_response)
 
         for attribute in var_attributes.values():
             if attribute.value == "":

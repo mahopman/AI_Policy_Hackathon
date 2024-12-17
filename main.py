@@ -27,7 +27,7 @@ NUM_POLICIES = 1
 CONVERSATION_LENGTH = 5
 USE_PREGENERATED_USER_INPUT = True
 USE_PREGENERATED_ASSISTANT_OUTPUT = True
-CONVERSATION_TO_LOAD = "conversations/conversation_2024-12-16 03:37:24.013245"
+CONVERSATION_TO_LOAD = "conversations/jailbreak_conversation"
 pregenerated_conversation = Conversation(CONVERSATION_TO_LOAD)
 
 def main():
@@ -75,7 +75,7 @@ def main():
                     fixed_attributes, var_attributes
                 )
 
-                kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html", policy)
+                kg.visualize_graph(f"viz/KG_policy{policy['id']}_prompt{prompt_id}_pass{conversation_index}.html", "Policy: " + policy["policy"])
             
             if not USE_PREGENERATED_USER_INPUT or not USE_PREGENERATED_ASSISTANT_OUTPUT:
                 new_conversation.save_to_file(f"conversations/conversation_policy_{policy['id']}_{str(datetime.datetime.now())}")
