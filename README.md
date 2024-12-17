@@ -4,7 +4,7 @@
 
 This project addresses the AI policy challenge of governing agentic systems by making their decision-making processes more accessible. Our solution utilizes an adaptive policy ontology integrated into a chatbot to clearly visualize and analyze its decision-making process. By creating explicit mappings between user inputs, policy rules, and risk levels, our system enables better governance of AI agents by making their reasoning traceable and adjustable. This approach facilitates continuous policy refinement and could aid in detecting and mitigating harmful outcomes. Our results demonstrate this with the example of “tricking” an agent into giving violent advice by caveating the request saying it is for a “video game”. Indeed, the ontology clearly shows where the policy falls short. This approach could be scaled to provide more interpretable documentation of AI chatbot conversations, which policy advisers could directly access to inform their specifications. 
 
-This project was developed as part of a hackathon submission for Apart Research.
+This project was developed as part of a [hackathon submission](https://www.apartresearch.com/project/mapping-intent-documenting-policy-adherence-with-ontology-extraction) for Apart Research.
 
 ## Features
 
