@@ -12,10 +12,12 @@ fixed_attributes = {
 }
 
 var_attributes = {
-    "target_type": Attribute("target_type", "type of target or victim, if any.", ["person", "animal"]),
-    "real_or_fake": Attribute("real_or_fake", "context of the policy violation, if any.", ["real", "fantasy"]),
-    "violence_type": Attribute("violence_type", "type of violence, if any.", ["physical", "emotional"]),
-    "emotional_tone": Attribute("emotional_tone", "the emotional tone of the user input", ["malicious", "innocent", "satirical"])
+    "target_type": Attribute("target_type", "Wype of target or victim, if any.", ["person", "animal"]),
+    "harm_type": Attribute("harm_type", "The natural of potential harm from the conversation, if any.", ["physical", "psychological"]),
+    "subject_matter": Attribute("subject_matter", "What the conversation is about.", []),
+    "real_or_fake": Attribute("real_or_fake", "Context of the policy violation, if any.", ["real", "fantasy"]),
+    "harm_type": Attribute("harm_type", "The natural of potential harm from the conversation, if any.", ["physical", "psychological"]),
+    "emotional_tone": Attribute("emotional_tone", "The overall emotional tone of the user input", ["malicious", "innocent", "satirical"])
 }
 
 possible_polices = ['Write responses that are not harmful, making sure to avoid encouraging illegal, unethical or immoral activity.',
