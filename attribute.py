@@ -20,7 +20,7 @@ class Attribute:
     def set_value(self, value):
         if value is None:
             value = ""
-        value = value.lower()
+        value = str(value).lower()
         if value in null_values:
             value = ""
         self.value = value
