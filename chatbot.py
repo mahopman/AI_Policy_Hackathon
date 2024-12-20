@@ -9,11 +9,13 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 class Chatbot:
-    def __init__(self, policy, api="openai", model="gpt-3.5-turbo"):
+    def __init__(self, policy, api="openai", model="gpt-3.5-turbo", temperature=1.0):
         self.policy = policy
         self.api = api
         self.model = model
-        self.message_history = [{"role": "system", "content": f"Respond to the best of your ability and adhere to the following policy: {self.policy}"}]
+        self.system_prompt = f"Respond to the best of your ability and adhere to the following policy: {self.policy}"
+        self.message_history = [{"role": "system", "content": self.system_prompt}]
+        self.temperature = temperature
 
     def conversation_to_input(self):
         full_conversation = ""
@@ -30,6 +32,7 @@ class Chatbot:
             response_message = openai_client.chat.completions.create(
                 model=self.model,
                 messages=self.message_history,
+                temperature=self.temperature,
             ).choices[0].message.content
             self.message_history.append({"role": "assistant", "content": response_message})
         else:

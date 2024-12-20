@@ -19,7 +19,14 @@ class Conversation:
     def get_assistant_response(self, conversation_index):
         return self.assistant_responses[conversation_index]
     
-    def get_conversation_at_step(self, step):
+    def get_conversation_at_steps(self, steps):
+        conversation = ""
+        for step in steps:
+            conversation += "USER: " + self.get_user_input(step) + "\n"
+            conversation += "ASSISTANT: " + self.get_assistant_response(step) + "\n"
+        return conversation 
+    
+    def get_conversation_up_to_step(self, step):
         full_conversation = ""
         for i in range(step+1):
             full_conversation += "USER: " + self.get_user_input(i) + "\n"
@@ -28,7 +35,7 @@ class Conversation:
     
     def save_to_file(self, filename):
         with open(filename, "w") as file:
-            file.write(self.get_conversation_at_step(len(self.assistant_responses)-1))
+            file.write(self.get_conversation_up_to_step(len(self.assistant_responses)-1))
 
     def load_from_file(self, filename):
         with open(filename, "r") as file:

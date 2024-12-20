@@ -1,5 +1,3 @@
-null_values = [None, "n/a", "none"]
-
 class Attribute:
 
     def __init__(self, name, description, example_values):
@@ -19,10 +17,8 @@ class Attribute:
 
     def set_value(self, value):
         if value is None:
-            value = ""
+            value = "none"
         value = str(value).lower()
-        if value in null_values:
-            value = ""
         self.value = value
         self.previous_values.append(value)
     
