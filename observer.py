@@ -17,7 +17,7 @@ def fix_json_error(json_str, exception):
     return response
 
 class Observer:
-    def __init__(self, policy, model="gpt-3.5-turbo"):
+    def __init__(self, policy, model="gpt-3.5-turbo", temperature=0.0):
         
         self.observer_prompt =f"""
             Analyse the following ASSISTANT responses and provide a structured response about how the ASSISTANT adheres to the following policy: {policy}.
@@ -36,12 +36,14 @@ class Observer:
 
         self.observer_responses = []
         self.openai_model = model
+        self.temperature = temperature
 
     def extract_attributes(self, conversation):
         observer_messages = [{"role": "user", "content": self.observer_prompt + "\n" + conversation}]
         response = client.chat.completions.create(
             model=self.openai_model,
             messages=observer_messages,
+            temperature=self.temperature
         ).choices[0].message.content
         #print("OBSERVER RESPONSE", response)
         response = response[response.find("{"):]

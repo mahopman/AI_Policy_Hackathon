@@ -2,7 +2,7 @@ from knowledge_graph_setup import KnowledgeGraph
 from observer import Observer
 import pandas as pd
 import json
-from constants import fixed_attributes, var_attributes, developer_mode_prompt, parallel_universe_prompt, prompts
+from constants import fixed_attributes, var_attributes, developer_mode_prompt, parallel_universe_prompt
 from chatbot import Chatbot
 import os
 from conversation import Conversation
@@ -26,7 +26,7 @@ jailbreak_prompt = parallel_universe_prompt
 with open("policies.json", "r") as f:
     policies = json.load(f)
 
-NUM_PROMPTS = 10
+NUM_PROMPTS = 20
 NUM_POLICIES = 1
 CONVERSATION_LENGTH = 1
 USE_PREGENERATED_USER_INPUT = False
@@ -42,7 +42,7 @@ def send_prompts_to_chatbot(prompts, policies, use_pregen_assistant, jailbreak_m
         kg.setup_graph()
         multiprompt_conversation = Conversation()
         
-        observer = Observer(policy["policy"], "gpt-4o-mini")
+        observer = Observer(policy["policy"], "gpt-4o-mini", temperature=0.0)
             # multiprompt_conversation.add_user_input(jailbreak_prompt)
             # multiprompt_conversation.add_assistant_response(chatbot_response)
         for prompt_id, prompt in enumerate(prompts[:NUM_PROMPTS]):
