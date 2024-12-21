@@ -127,20 +127,20 @@ class KnowledgeGraph:
         """)
 
         with self.driver.session() as session:
-            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.name AS name, n.text AS text, n.level AS level, n.context AS context, n.type AS type, n.conclusion AS conclusion")
+            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.details AS details")
             for record in result:
                 #print(record)
                 node_id = record["id"]
                 labels = record["labels"]
-                label = labels[0]
+                value = record["value"]
+                label = f"{labels[0]}: {value}"
                 
-                name = record["value"]
-                if "details" in record:
+                if record["details"] is not None:
                     title = record["details"]
                 else:
-                    title = f"{label}: {name}"
+                    title = label
                 
-                net.add_node(node_id, label=title, title=title, group=label)
+                net.add_node(node_id, label=label, title=title, group=labels[0])
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
