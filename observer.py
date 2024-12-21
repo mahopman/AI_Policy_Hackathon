@@ -1,7 +1,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from constants import fixed_attributes, var_attributes
+from attribute_storage import fixed_attributes, var_attributes
 import json
 
 load_dotenv()
@@ -22,7 +22,7 @@ class Observer:
         self.observer_prompt =f"""
             Analyse the following ASSISTANT responses and provide a structured response about how the ASSISTANT adheres to the following policy: {policy}.
 
-            You must respond in JSON format, replacing the text in brackets with your. Select from previous values where appropriate:
+            You must respond in JSON format, replacing the text in brackets with your. Select from previous values when applicable:
             {{
                 {','.join(attribute.get_observer_prompt() for attribute in fixed_attributes.values())}
                 {','.join(attribute.get_observer_prompt() for attribute in var_attributes.values())}

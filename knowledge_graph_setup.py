@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 import streamlit as st
 from pyvis.network import Network
+from attribute_storage import divide_into_fixed_and_var
 import webbrowser
 import os
 
@@ -52,27 +53,25 @@ class KnowledgeGraph:
         tx.run(user_input_query, user_input=user_input)
 
         assistant_response = fixed_attributes["assistant_response"].value[:100]
+        assistant_intent = fixed_attributes["assistant_intent"].value
         assistant_response_query = """
-        CREATE (a:AssistantResponse {value: $assistant_response})
+        CREATE (a:AssistantResponse {value: $assistant_response, details: $assistant_intent})
         WITH a
         MATCH (u:UserInput {value:$user_input})
         CREATE (a)-[:RESPONDS_TO]->(u)
         """
-        tx.run(assistant_response_query, user_input=user_input, assistant_response=assistant_response)
+        tx.run(assistant_response_query, user_input=user_input, assistant_response=assistant_response, assistant_intent=assistant_intent)
 
         violation_degree = fixed_attributes["violation_degree"].value.lower()
         policy_violation = fixed_attributes["policy_violation"].value.lower()
-        assistant_intent = fixed_attributes["assistant_intent"].value
         reasoning_path = fixed_attributes["reasoning_path"].value
         inference_query = """
         MERGE (r:Violation_Degree {value: $violation_degree})
         MERGE (p:Policy_Violation {value: $policy_violation})
-        CREATE (i:AssistantIntent {value: $assistant_intent, reasoning: $reasoning_path})
-        WITH i, p, r
+        WITH p, r
         MATCH (a:AssistantResponse {value: $assistant_response})
         CREATE (r)-[:INFERRED_RISK]->(a)
         CREATE (a)-[:VIOLATES]->(p)
-        CREATE (i)-[:DESCRIBES]->(a)
         WITH p, r
         CREATE (p)-[:DEGREE]->(r)
         """
@@ -133,10 +132,13 @@ class KnowledgeGraph:
                 #print(record)
                 node_id = record["id"]
                 labels = record["labels"]
-                label = labels[0] 
+                label = labels[0]
                 
-                name = record["value"] or record["text"] or record["level"] or record["context"] or record["type"] or record["conclusion"] or label
-                title = f"{label}: {name}"
+                name = record["value"]
+                if "details" in record:
+                    title = record["details"]
+                else:
+                    title = f"{label}: {name}"
                 
                 net.add_node(node_id, label=title, title=title, group=label)
 
@@ -152,6 +154,11 @@ class KnowledgeGraph:
         #    webbrowser.open("file://" + os.path.abspath(output_file))
         #else:
         #    print("Failed to open the visualization HTML file.")
+
+    def load_from_attribute_lists(self, attribute_lists):
+        for attribute_list in attribute_lists:
+            fixed, var = divide_into_fixed_and_var(attribute_list)
+            self.add_user_input(fixed, var)
 
 if __name__ == "__main__":
     kg = KnowledgeGraph()
