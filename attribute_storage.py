@@ -16,7 +16,7 @@ fixed_attributes = {
 var_attributes = {
     "target_type": Attribute("target_type", "Type of target or victim, if any.", ["person", "animal"]),
     "harm_type": Attribute("harm_type", "The nature of potential harm from the conversation, if any.", ["physical", "psychological"]),
-    "subject_matter": Attribute("subject_matter", "What the conversation is about.", []),
+    #"subject_matter": Attribute("subject_matter", "What the conversation is about.", []),
     #"real_or_fake": Attribute("real_or_fake", "Context of the policy violation, if any.", ["real", "fantasy"]),
     #"harm_type": Attribute("harm_type", "The natural of potential harm from the conversation, if any.", ["physical", "psychological"]),
     #"emotional_tone": Attribute("emotional_tone", "The overall emotional tone of the user input", ["malicious", "innocent", "satirical"])
