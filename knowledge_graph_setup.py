@@ -113,36 +113,72 @@ class KnowledgeGraph:
         #print("User input, inferences, and relationships created successfully.")
 
     def visualize_graph(self, filename, heading):
-        net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", heading=heading)
-        
-        net.barnes_hut(gravity=-3000, central_gravity=0.2, spring_length=150, spring_strength=0.02)
+        net = Network(height="750px", width="100%", bgcolor="#1e1e2e", font_color="white", heading=heading)
+
+        # Adjust Barnes-Hut physics for better spacing and clustering
+        net.barnes_hut(gravity=-8000, central_gravity=0.3, spring_length=250, spring_strength=0.05, damping=0.5)
+
+        # Set improved options
         net.set_options("""
         var options = {
-          "nodes": {
-            "font": {
-              "size": 16,
-              "face": "arial",
-              "color": "white",
-              "strokeWidth": 2
+        "nodes": {
+            "shape": "dot",
+            "scaling": {
+            "min": 10,
+            "max": 30,
+            "label": {
+                "enabled": true,
+                "min": 14,
+                "max": 20,
+                "maxVisible": 10
             }
-          },
-          "edges": {
-            "arrows": {"to": { "enabled": true, "scaleFactor": 1 }},
-            "color": {"inherit": "both"},
-            "smooth": true
-          },
-          "physics": {
+            },
+            "font": {
+            "size": 16,
+            "face": "verdana",
+            "color": "white"
+            },
+            "color": {
+            "background": "#6a4c93",
+            "border": "#ffffff",
+            "highlight": {
+                "background": "#ff5e57",
+                "border": "#ffffff"
+            }
+            },
+            "borderWidth": 2
+        },
+        "edges": {
+            "arrows": {"to": { "enabled": true, "scaleFactor": 1.2 }},
+            "color": {
+            "color": "#bababa",
+            "highlight": "#ff5e57",
+            "inherit": false
+            },
+            "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+            }
+        },
+        "interaction": {
+            "hover": true,
+            "tooltipDelay": 200,
+            "navigationButtons": true,
+            "zoomView": true
+        },
+        "physics": {
             "enabled": true,
             "solver": "barnesHut",
             "barnesHut": {
-              "gravitationalConstant": -20000,
-              "centralGravity": 0.04,
-              "springLength": 200,
-              "springConstant": 0.01,
-              "damping": 0.9
+            "gravitationalConstant": -20000,
+            "centralGravity": 0.4,
+            "springLength": 250,
+            "springConstant": 0.02,
+            "damping": 0.9
             },
-            "minVelocity": 0.75
-          }
+            "minVelocity": 0.5,
+            "timestep": 0.5
+        }
         }
         """)
 
