@@ -222,13 +222,19 @@ class KnowledgeGraph:
                 else:
                     title = label
 
+                if labels[0] == "Violation_Degree":
+                    color = "#00ff1e"
+                else:
+                    color = None
+
                 # Add the node with a calculated size
                 net.add_node(
                     node_id,
                     label=label,
                     title=title,
                     group=labels[0],
-                    value=size  # Set the size of the node
+                    value=size,  # Set the size of the node
+                    color=color # Set the color of the node
                 )
 
 
