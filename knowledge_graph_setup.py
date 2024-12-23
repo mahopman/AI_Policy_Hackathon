@@ -65,16 +65,30 @@ class KnowledgeGraph:
         violation_degree = fixed_attributes["violation_degree"].value.lower()
         policy_violation = fixed_attributes["policy_violation"].value.lower()
         reasoning_path = fixed_attributes["reasoning_path"].value
+
         inference_query = """
+        // Merge or find the Violation_Degree node
         MERGE (r:Violation_Degree {value: $violation_degree})
+        ON CREATE SET r.occurrence = 1
+        ON MATCH SET r.occurrence = r.occurrence + 1
+
+        // Merge or find the Policy_Violation node
         MERGE (p:Policy_Violation {value: $policy_violation})
+        ON CREATE SET p.occurrence = 1
+        ON MATCH SET p.occurrence = p.occurrence + 1
+
+        // Find the AssistantResponse node and create relationships
         WITH p, r
         MATCH (a:AssistantResponse {value: $assistant_response})
         CREATE (r)-[:INFERRED_RISK]->(a)
         CREATE (a)-[:VIOLATES]->(p)
+
+        // Create DEGREE relationship between Policy_Violation and Violation_Degree
         WITH p, r
         CREATE (p)-[:DEGREE]->(r)
         """
+
+
         #print("INFERENCE QUERY", inference_query)
         tx.run(inference_query, violation_degree=violation_degree, policy_violation=policy_violation, assistant_intent=assistant_intent, reasoning_path=reasoning_path, assistant_response=assistant_response)
 
@@ -82,13 +96,19 @@ class KnowledgeGraph:
             if attribute.value == "":
                 continue
             query = f"""
+            // Merge or find the node for the attribute
             MERGE (v:{attribute.name} {{value: $attribute_value}})
+            ON CREATE SET v.occurrence = 1
+            ON MATCH SET v.occurrence = v.occurrence + 1
+
+            // Create the relationship to the Violation_Degree node
             WITH v
             MATCH (r:Violation_Degree {{value: $violation_degree}})
             CREATE (v)-[:RISKFACTORS]->(r)
             """
-            #print(query)
             tx.run(query, attribute_value=attribute.value.lower(), violation_degree=violation_degree)
+
+
 
         #print("User input, inferences, and relationships created successfully.")
 
@@ -127,13 +147,16 @@ class KnowledgeGraph:
         """)
 
         with self.driver.session() as session:
-            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.details AS details")
+            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.details AS details, n.occurrence AS occurrence")
             for record in result:
                 #print(record)
                 node_id = record["id"]
                 labels = record["labels"]
                 value = record["value"]
                 label = f"{labels[0]}: {value}"
+                occurence = record["occurrence"]
+                if occurence is not None and int(occurence) > 1:
+                    label += f"\n(count = {occurence})"
                 
                 if record["details"] is not None:
                     title = record["details"]
