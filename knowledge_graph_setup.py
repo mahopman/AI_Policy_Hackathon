@@ -183,23 +183,54 @@ class KnowledgeGraph:
         """)
 
         with self.driver.session() as session:
-            result = session.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.details AS details, n.occurrence AS occurrence")
+            # Retrieve all nodes and their properties
+            result = session.run(
+                "MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, n.value AS value, n.details AS details, n.occurrence AS occurrence"
+            )
+
+            # Collect occurrences to calculate the size range
+            nodes = []
+            max_occurrence = 0
             for record in result:
-                #print(record)
+                nodes.append(record)
+                if record["occurrence"] is not None:
+                    max_occurrence = max(max_occurrence, int(record["occurrence"]))
+
+            # Define size range for nodes
+            min_size = 10
+            max_size = 30
+
+            # Add nodes to the network
+            for record in nodes:
                 node_id = record["id"]
                 labels = record["labels"]
                 value = record["value"]
                 label = f"{labels[0]}: {value}"
-                occurence = record["occurrence"]
-                if occurence is not None and int(occurence) > 1:
-                    label += f"\n(count = {occurence})"
-                
+                occurrence = record["occurrence"]
+
+                if occurrence is not None and int(occurrence) > 1:
+                    label += f"\n(count = {occurrence})"
+
+                # Determine node size based on normalized occurrence
+                if occurrence is not None:
+                    size = min_size + ((max_size - min_size) * (int(occurrence) / max_occurrence))
+                else:
+                    size = min_size  # Default size for nodes without occurrence
+
                 if record["details"] is not None:
                     title = record["details"]
                 else:
                     title = label
-                
-                net.add_node(node_id, label=label, title=title, group=labels[0])
+
+                # Add the node with a calculated size
+                net.add_node(
+                    node_id,
+                    label=label,
+                    title=title,
+                    group=labels[0],
+                    value=size  # Set the size of the node
+                )
+
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
