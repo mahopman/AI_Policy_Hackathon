@@ -18,7 +18,7 @@ class Attribute:
     def set_value(self, value):
         if value is None:
             value = "none"
-        value = str(value).lower()
+        value = str(value)
         self.value = value
         self.previous_values.append(value)
     
