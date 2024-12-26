@@ -113,7 +113,7 @@ class KnowledgeGraph:
         #print("User input, inferences, and relationships created successfully.")
 
     def visualize_graph(self, filename, heading):
-        net = Network(height="750px", width="100%", bgcolor="#1e1e2e", font_color="white", heading=heading)
+        net = Network(height="750px", width="100%", bgcolor="#ffffff", font_color="black", heading=heading)
 
         # Adjust Barnes-Hut physics for better spacing and clustering
         net.barnes_hut(gravity=-8000, central_gravity=0.3, spring_length=250, spring_strength=0.05, damping=0.5)
