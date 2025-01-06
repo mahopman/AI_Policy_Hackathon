@@ -128,9 +128,9 @@ class KnowledgeGraph:
             "max": 30,
             "label": {
                 "enabled": true,
-                "min": 14,
-                "max": 20,
-                "maxVisible": 10
+                "min": 20,
+                "max": 30,
+                "maxVisible": 1
             }
             },
             "font": {
@@ -149,7 +149,7 @@ class KnowledgeGraph:
             "borderWidth": 2
         },
         "edges": {
-            "arrows": {"to": { "enabled": true, "scaleFactor": 1.2 }},
+            "arrows": { "to": { "enabled": true, "scaleFactor": 1.5 } },
             "color": {
             "color": "#bababa",
             "highlight": "#ff5e57",
