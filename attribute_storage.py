@@ -22,6 +22,15 @@ var_attributes = {
     #"emotional_tone": Attribute("emotional_tone", "The overall emotional tone of the user input", ["malicious", "innocent", "satirical"])
 }
 
+colors = {
+    "UserInput": "#28a745",
+    "AssistantResponse": "#007bff",
+    "Policy_Violation": "#6f42c1",
+    "target_type": "#ffc107",
+    "harm_type": "#fd7e14",
+}
+
+
 saved_attribute_lists = []
 
 def store_attributes():

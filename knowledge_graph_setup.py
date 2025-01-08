@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 import streamlit as st
 from pyvis.network import Network
-from attribute_storage import divide_into_fixed_and_var
+from attribute_storage import divide_into_fixed_and_var, colors
 import webbrowser
 import os
 
@@ -45,14 +45,16 @@ class KnowledgeGraph:
     def create_user_input(tx, fixed_attributes, var_attributes):
         # for attribute in fixed_attributes.values():
         #     print(attribute.value)
-        user_input = fixed_attributes["user_input"].value[:100]
+        user_input = fixed_attributes["user_input"].value[:60]
         user_input_query = """
         CREATE (u:UserInput {value: $user_input})
         RETURN u
         """
         tx.run(user_input_query, user_input=user_input)
 
-        assistant_response = fixed_attributes["assistant_response"].value[:100]
+        assistant_response = fixed_attributes["assistant_response"].value[:60]
+        if len(fixed_attributes["assistant_response"].value) > 60:
+            assistant_response = fixed_attributes["assistant_response"].value[:57] + "..."
         assistant_intent = fixed_attributes["assistant_intent"].value
         assistant_response_query = """
         CREATE (a:AssistantResponse {value: $assistant_response, details: $assistant_intent})
@@ -124,12 +126,12 @@ class KnowledgeGraph:
         "nodes": {
             "shape": "dot",
             "scaling": {
-            "min": 10,
-            "max": 30,
+            "min": 20,
+            "max": 40,
             "label": {
                 "enabled": true,
-                "min": 20,
-                "max": 30,
+                "min": 30,
+                "max": 40,
                 "maxVisible": 1
             }
             },
@@ -149,7 +151,7 @@ class KnowledgeGraph:
             "borderWidth": 2
         },
         "edges": {
-            "arrows": { "to": { "enabled": true, "scaleFactor": 1.5 } },
+            "arrows": { "to": { "enabled": true, "scaleFactor": 1.0 } },
             "color": {
             "color": "#bababa",
             "highlight": "#ff5e57",
@@ -222,21 +224,12 @@ class KnowledgeGraph:
                 else:
                     title = label
 
-                if labels[0] == "Violation_Degree":
-                    color = "#00ff1e"
+                if labels[0].lower() == "violation_degree":
+                    color = self.generate_color(int(value))
+                    net.add_node(node_id, label=label, title=title, color=color, value=size)
                 else:
-                    color = None
-
-                # Add the node with a calculated size
-                net.add_node(
-                    node_id,
-                    label=label,
-                    title=title,
-                    group=labels[0],
-                    value=size,  # Set the size of the node
-                    color=color # Set the color of the node
-                )
-
+                    color = colors[labels[0]]
+                    net.add_node(node_id, label=label, title=title, color=color, value=size)
 
             result = session.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS source, elementId(b) AS target, type(r) AS type")
             for record in result:
@@ -255,6 +248,24 @@ class KnowledgeGraph:
         for attribute_list in attribute_lists:
             fixed, var = divide_into_fixed_and_var(attribute_list)
             self.add_user_input(fixed, var)
+
+    def generate_color(self, value):
+        """
+        Generate a color in hexadecimal format based on the value (1 to 5).
+        1 corresponds to light pink, and 5 corresponds to dark red.
+        """
+        if not 1 <= value <= 5:
+            raise ValueError("Value must be between 1 and 5.")
+
+        # Calculate red intensity (scales between 255 for light pink to 139 for dark red)
+        red_intensity = int(255 - ((255 - 139) / 4) * (value - 1))
+        # Set green and blue to create the pink-to-red gradient
+        green_blue_intensity = int(192 + ((80 - 192) / 4) * (value - 1))
+
+        # Convert to hexadecimal format
+        color_hex = f"#{red_intensity:02x}{green_blue_intensity:02x}{green_blue_intensity:02x}"
+        return color_hex
+
 
 if __name__ == "__main__":
     kg = KnowledgeGraph()
