@@ -4,13 +4,16 @@ from pyvis.network import Network
 from attribute_storage import divide_into_fixed_and_var, colors
 import webbrowser
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class KnowledgeGraph:
 
     def __init__(self):
-        uri = st.secrets["NEO4J_URI"]
-        user = st.secrets["NEO4J_USER"]
-        password = st.secrets["NEO4J_PASSWORD"]
+        uri = os.getenv("NEO4J_URI")
+        user = os.getenv("NEO4J_USER")
+        password = os.getenv("NEO4J_PASSWORD")
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     def close(self):
